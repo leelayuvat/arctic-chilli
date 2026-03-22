@@ -2,7 +2,7 @@
 # Project Part A: Single Player Cascade
 
 from .core import CellState, Coord, Direction, Action, MoveAction, EatAction, CascadeAction
-from .utils import render_board
+from .utils import render_board, create_root, apply, goal_test
 
 
 def search(
@@ -27,6 +27,8 @@ def search(
     # board state in a human-readable format. If your terminal supports ANSI
     # codes, set the `ansi` flag to True to print a colour-coded version!
     print(render_board(board, ansi=True))
+    
+    # Each node is represented as a tuple: (state, parent, action, depth, children)
 
     # Do some impressive AI stuff here to find the solution...
     # ...
