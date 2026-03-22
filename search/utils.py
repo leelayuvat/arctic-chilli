@@ -1,7 +1,7 @@
 # COMP30024 Artificial Intelligence, Semester 1 2026
 # Project Part A: Single Player Cascade
 
-from .core import Coord, CellState, PlayerColor, BOARD_N
+from .core import Coord, CellState, PlayerColor, Direction, BOARD_N, MoveAction, EatAction, CascadeAction
 
 
 def apply_ansi(
@@ -47,3 +47,91 @@ def render_board(
             output += " "
         output += "\n"
     return output
+
+
+def goal_test(state):
+    """Test if we have reached the goal state"""
+    for cell in state.values():
+        if cell.color == PlayerColor.BLUE:
+            return False
+    return True
+
+
+def create_root(initial_state):
+    return (initial_state, None, None, 0, [])
+
+
+def in_bounds(coord):
+    return 0 <= coord.r < 8 and 0 <= coord.c < 8
+
+
+def apply(action, node):
+    """Takes a node and an action and applies the action to that node. Returns a new node after the action have been applied."""
+    (state, parent_action, grandparent, depth, children) = node
+    new_state = dict(state)
+    new_depth = depth + 1
+
+    if isinstance(action, MoveAction):
+        try:
+            next_coord = action.coord + action.direction
+        except ValueError:
+            new_node = (new_state, node, action, new_depth, [])
+            return new_node
+        if next_coord in state:
+            if state[next_coord].color == PlayerColor.RED:
+                del new_state[next_coord]
+                new_state[next_coord] = CellState(PlayerColor.RED, state[next_coord].height + state[action.coord].height)
+                del new_state[action.coord]
+            
+        elif in_bounds(next_coord):
+            new_state[next_coord] = state[action.coord]
+            del new_state[action.coord]
+    
+
+    if isinstance(action, EatAction):
+        try:
+            next_coord = action.coord + action.direction
+        except ValueError:
+            new_node = (new_state, node, action, new_depth, [])
+            return new_node
+        if next_coord in state:
+            if state[next_coord].color == PlayerColor.BLUE and state[next_coord].height <= state[action.coord].height:
+                del new_state[next_coord]
+                new_state[next_coord] = state[action.coord]
+                del new_state[action.coord]
+    
+
+    if isinstance(action, CascadeAction):
+        height = state[action.coord].height
+        if height > 1:
+            del new_state[action.coord]
+            current = action.coord
+            for _ in range(height):
+                try:
+                    next_coord = current + action.direction
+                except ValueError:
+                    break
+                if next_coord not in new_state:
+                    new_state[next_coord] = CellState(PlayerColor.RED, 1)
+                    current = next_coord
+                else:
+                    chain = []
+                    temp = next_coord
+                    while True:
+                        if temp not in new_state:
+                            break
+                        chain.append(temp)
+                        try:
+                            temp = temp + action.direction
+                        except ValueError:
+                            break
+                    print(chain)
+                    for pos in reversed(chain):
+                        new_state[temp] = new_state[pos]
+                        del new_state[pos]
+                        temp = pos
+                    new_state[next_coord] = CellState(PlayerColor.RED, 1)
+                    current = next_coord
+    
+    new_node = (new_state, node, action, new_depth, [])
+    return new_node
