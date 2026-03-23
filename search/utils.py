@@ -1,6 +1,8 @@
 # COMP30024 Artificial Intelligence, Semester 1 2026
 # Project Part A: Single Player Cascade
 
+from dataclasses import dataclass
+
 from .core import Coord, CellState, PlayerColor, Direction, BOARD_N, MoveAction, EatAction, CascadeAction
 
 
@@ -64,6 +66,29 @@ def create_root(initial_state):
 def in_bounds(coord):
     return 0 <= coord.r < 8 and 0 <= coord.c < 8
 
+def evaluate_heuristic(state): #heuristic based on number of enemy pieces
+    heuristic = 0
+    for cell in state.values():
+        if cell.color == PlayerColor.BLUE:
+            heuristic += cell.height
+    return heuristic
+
+@dataclass
+class Node: #Defining a class for node to make it easier. I don't believe the previous_action is necessary. If it is, we can add it later.
+    state: dict[Coord, CellState]
+    parent_node: 'Node' | None
+    depth: int
+    children: list['Node']
+
+    def __init__(self, state, parent_node, depth, children):
+        self.state = state
+        self.parent_node = parent_node
+        self.depth = depth
+        self.children = children | None
+        
+def find_children(node: Node):
+    #check all four moves
+    
 
 def apply(action, node):
     """Takes a node and an action and applies the action to that node. Returns a new node after the action have been applied."""

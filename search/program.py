@@ -3,7 +3,7 @@
 
 from .core import CellState, Coord, Direction, Action, MoveAction, EatAction, CascadeAction
 from .utils import render_board, create_root, apply, goal_test
-
+import heapq
 
 def search(
     board: dict[Coord, CellState]
@@ -22,6 +22,36 @@ def search(
         A list of actions (MoveAction, EatAction, or CascadeAction), or `None`
         if no solution is possible.
     """
+
+
+    """
+1. Generate the root note from the board cell states
+2. Create a list of expanded and generated nodes
+3. Create a heuristic function
+4. Perform the search
+
+    """
+    generated_list = [] #implemented as a minheap
+    heapq.heapify(generated_list)
+    expanded_list = []
+    root_node = create_root(board) #creating the root node
+
+    heapq.heappush(generated_list, (0, root_node))
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     # The render_board() function is handy for debugging. It will print out a
     # board state in a human-readable format. If your terminal supports ANSI
