@@ -87,12 +87,37 @@ class Node: #Defining a class for node to make it easier. I don't believe the pr
         self.children = children | None
         
 def find_children(node: Node):
-    #check all four moves
+    #check all four directions
+    
+    """
+    1. Get a list of all pieces that have possible moves
+    2. Iterate through all moves for each piece
+    """
+    children = []
+    for coord in node.state:
+        
+        if node.state[coord].color == PlayerColor.RED:
+    
+            for direction in Direction:#this code is still wrong, ignore
+         #check move first
+                move_action = MoveAction(coord,direction)
+                new_node = apply(MoveAction, node)
+        
+                if(new_node.state != node.state):{
+                    children.append(new_node)   
+                }
+        
+        #check eat
+                new_node = apply(EatAction, node)
+
+
     
 
-def apply(action, node):
+def apply(action, node: Node):
     """Takes a node and an action and applies the action to that node. Returns a new node after the action have been applied."""
-    (state, parent_action, grandparent, depth, children) = node
+    state = node.state
+    depth = node.depth
+
     new_state = dict(state)
     new_depth = depth + 1
 
@@ -100,7 +125,7 @@ def apply(action, node):
         try:
             next_coord = action.coord + action.direction
         except ValueError:
-            new_node = (new_state, node, action, new_depth, [])
+            new_node = Node(new_state, node, new_depth, [])
             return new_node
         if next_coord in state:
             if state[next_coord].color == PlayerColor.RED:
@@ -117,7 +142,7 @@ def apply(action, node):
         try:
             next_coord = action.coord + action.direction
         except ValueError:
-            new_node = (new_state, node, action, new_depth, [])
+            new_node = Node(new_state, node, new_depth, [])
             return new_node
         if next_coord in state:
             if state[next_coord].color == PlayerColor.BLUE and state[next_coord].height <= state[action.coord].height:
@@ -158,5 +183,6 @@ def apply(action, node):
                     new_state[next_coord] = CellState(PlayerColor.RED, 1)
                     current = next_coord
     
-    new_node = (new_state, node, action, new_depth, [])
+                new_node = Node(new_state, node, new_depth, [])
+
     return new_node
