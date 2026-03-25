@@ -2,7 +2,7 @@
 # Project Part A: Single Player Cascade
 
 from .core import CellState, Coord, Direction, Action, MoveAction, EatAction, CascadeAction
-from .utils import render_board, create_root, apply, goal_test
+from .utils import render_board, create_root, apply, goal_test, find_children, Node
 import heapq
 
 def search(
@@ -37,6 +37,9 @@ def search(
     root_node = create_root(board) #creating the root node
 
     heapq.heappush(generated_list, (0, root_node))
+    find_children(root_node)
+    for children_node in root_node.children:
+        print(render_board(children_node.state, True))
     
 
 
