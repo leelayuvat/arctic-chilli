@@ -60,99 +60,101 @@ def goal_test(state):
 
 
 def create_root(initial_state):
-    return Node(initial_state,None, 0, [])
+    return Node(initial_state, None, None, 0, [])
 
 
-def in_bounds(coord):
-    return 0 <= coord.r < 8 and 0 <= coord.c < 8
-
-def evaluate_heuristic(state): #heuristic based on number of enemy pieces
+def evaluate_heuristic(state):
+    """Takes a state and return the heuristic evaluation of this state"""
     heuristic = 0
     for cell in state.values():
         if cell.color == PlayerColor.BLUE:
-            heuristic += cell.height
+            heuristic += 1
     return heuristic
 
+
 @dataclass
-class Node: #Defining a class for node to make it easier. I don't believe the previous_action is necessary. If it is, we can add it later.
+class Node:
     state: dict[Coord, CellState]
     parent_node: 'Node'
+    previous_action: MoveAction | EatAction | CascadeAction | None
     depth: int
     children: list['Node']
 
-    def __init__(self, state:dict, parent_node: 'Node', depth: int, children):
-        self.state = state
-        self.parent_node = parent_node
-        self.depth = depth
-        self.children = children
-        
+
 def find_children(node: Node):
-    #check all four directions
-    
-    """
-    1. Get a list of all pieces that have possible moves
-    2. Iterate through all moves for each piece
-    """
+    """Takes a node at finds the possible solutins and put them into node.children"""
     children = []
     for coord in node.state:
         if node.state[coord].color == PlayerColor.RED:
 
-            for direction in Direction:#this code is still wrong, ignore
-         #check move first
+            for direction in Direction:
+                #check move
                 move_action = MoveAction(coord,direction)
                 new_node = apply(move_action, node)
-                if(new_node.state != node.state):
+                if new_node.state != node.state:
                     children.append(new_node)   
 
-                
-        
-        #check eat
+                #check eat
                 eat_action = EatAction(coord, direction)
                 new_node = apply(eat_action, node)
-
-                if(new_node.state != node.state):
+                if new_node.state != node.state:
                     children.append(new_node)
-                
-                
-        #check cascade
+
+                #check cascade
                 cascade_action = CascadeAction(coord, direction)
                 new_node = apply(cascade_action, node)
+                if new_node.state != node.state:
+                    children.append(new_node)
 
-                if(new_node.state != node.state):
-                    children.append(new_node)  
     node.children = children
-                
 
-    
+            
+def serialize(state):
+    """Takes a state and serialize it so that it can be compared to other
+    states, if it has been already expanded"""
+    tup = []
+    for coord, cell in state.items():
+        tup.append((coord, cell.color, cell.height))
+    return tuple(sorted(tup))
+
+
+def get_path(node):
+    """Takes a node and returns a list containing the path with the solution."""
+    path = []
+    next_node = node
+    while next_node.parent_node:
+        path.insert(0, next_node.previous_action)
+        next_node = next_node.parent_node
+    return path
+
 
 def apply(action, node: Node):
-    """Takes a node and an action and applies the action to that node. Returns a new node after the action have been applied."""
+    """Takes a node and an action and applies the action to that node.
+    Returns a new node after the action have been applied."""
     state = node.state
     depth = node.depth
-    new_state = [] # creates a deep copy of state
-    new_state = dict(new_state)
-    for coord, cell_state in state.items():
-        new_state[coord] = CellState(cell_state.color, cell_state.height)
+    new_state = {
+        coord: CellState(cell.color, cell.height)
+        for coord, cell in state.items()}
         
     new_depth = depth + 1
-    new_node = Node(new_state, node, new_depth, []) #some redundancy in this
+    new_node = Node(new_state, node, action, new_depth, []) #some redundancy in this
 
     if isinstance(action, MoveAction):
         try:
             next_coord = action.coord + action.direction
         except ValueError:
-            new_node = Node(new_state, node, new_depth, [])
+            new_node = Node(new_state, node, action, new_depth, [])
             return new_node
-        if next_coord in state:
-            if state[next_coord].color == PlayerColor.BLUE: #to disallow moving onto an enemy pieces
-                new_node = Node(new_state, node, new_depth, [])
-            if state[next_coord].color == PlayerColor.RED:
+        if next_coord in new_state:
+            if new_state[next_coord].color == PlayerColor.BLUE:
+                new_node = Node(new_state, node, action, new_depth, [])
+            if new_state[next_coord].color == PlayerColor.RED:
                 del new_state[next_coord]
-                new_state[next_coord] = CellState(PlayerColor.RED, state[next_coord].height + state[action.coord].height)
+                new_state[next_coord] = CellState(PlayerColor.RED, state[next_coord].height + new_state[action.coord].height)
                 del new_state[action.coord]
-            
-        elif in_bounds(next_coord): #why does out of bounds need to be checked twice? Does ValueError do the same thing?
-            new_state[next_coord] = state[action.coord]
+        else:
+            new_state[next_coord] = new_state[action.coord]
             del new_state[action.coord]
     
 
@@ -160,17 +162,17 @@ def apply(action, node: Node):
         try:
             next_coord = action.coord + action.direction
         except ValueError:
-            new_node = Node(new_state, node, new_depth, [])
+            new_node = Node(new_state, node, action, new_depth, [])
             return new_node
         if next_coord in state:
-            if state[next_coord].color == PlayerColor.BLUE and state[next_coord].height <= state[action.coord].height:
+            if new_state[next_coord].color == PlayerColor.BLUE and new_state[next_coord].height <= new_state[action.coord].height:
                 del new_state[next_coord]
-                new_state[next_coord] = state[action.coord]
+                new_state[next_coord] = new_state[action.coord]
                 del new_state[action.coord]
     
 
     if isinstance(action, CascadeAction):
-        height = state[action.coord].height
+        height = new_state[action.coord].height
         if height > 1:
             del new_state[action.coord]
             current = action.coord
@@ -193,7 +195,6 @@ def apply(action, node: Node):
                             temp = temp + action.direction
                         except ValueError:
                             break
-                    print(chain)
                     for pos in reversed(chain):
                         new_state[temp] = new_state[pos]
                         del new_state[pos]
@@ -201,6 +202,6 @@ def apply(action, node: Node):
                     new_state[next_coord] = CellState(PlayerColor.RED, 1)
                     current = next_coord
     
-                new_node = Node(new_state, node, new_depth, [])
+                new_node = Node(new_state, node, action, new_depth, [])
 
     return new_node
