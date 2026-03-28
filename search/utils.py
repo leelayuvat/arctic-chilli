@@ -64,13 +64,21 @@ def create_root(initial_state):
 
 
 def evaluate_heuristic(state):
-    """Takes a state and return the heuristic evaluation of this state"""
-    heuristic = 0
-    for cell in state.values():
+    blue_coords = {}
+    for coord, cell in state.items():
         if cell.color == PlayerColor.BLUE:
-            heuristic += 1
-    #heuristic = 1 if not goal_test(state) else 0
-    return heuristic
+            blue_coords[coord] = cell
+
+    if not blue_coords:
+        return 0
+
+    unique_cols = set()
+    unique_rows = set()
+    for coord in blue_coords:
+        unique_rows.add(coord.r)
+        unique_cols.add(coord.c)
+
+    return min(len(unique_rows), len(unique_cols))
 
 
 @dataclass
@@ -137,7 +145,7 @@ def apply(action, node: Node):
     new_state = dict(state)
         
     new_depth = depth + 1
-    new_node = Node(new_state, node, action, new_depth, []) #some redundancy in this
+    new_node = Node(new_state, node, action, new_depth, [])
 
     if isinstance(action, MoveAction):
         try:

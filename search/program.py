@@ -29,7 +29,7 @@ def search(
     # board state in a human-readable format. If your terminal supports ANSI
     # codes, set the `ansi` flag to True to print a colour-coded version!
     print(render_board(board, ansi=True))
-    
+
     # Each node is represented as a tuple: (state, parent, action, depth, children)
 
     # Do some impressive AI stuff here to find the solution...
@@ -66,7 +66,7 @@ def search(
             
             heapq.heappush(heap_list, (f, counter, child))
             counter += 1
-
+    
     # Here we're returning "hardcoded" actions as an example of the expected
     # output format. Of course, you should instead return the result of your
     # search algorithm. Remember: if no solution is possible for a given input,
