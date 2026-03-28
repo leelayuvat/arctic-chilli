@@ -24,14 +24,6 @@ def search(
     """
 
 
-    """
-1. Generate the root note from the board cell states
-2. Create a list of expanded and generated nodes
-3. Create a heuristic function
-4. Perform the search
-
-    """
-
 
     # The render_board() function is handy for debugging. It will print out a
     # board state in a human-readable format. If your terminal supports ANSI
@@ -79,4 +71,6 @@ def search(
     # output format. Of course, you should instead return the result of your
     # search algorithm. Remember: if no solution is possible for a given input,
     # return `None` instead of a list.
+
+    # python -m search < test-vis4.csv
     return None

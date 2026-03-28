@@ -69,6 +69,7 @@ def evaluate_heuristic(state):
     for cell in state.values():
         if cell.color == PlayerColor.BLUE:
             heuristic += 1
+    #heuristic = 1 if not goal_test(state) else 0
     return heuristic
 
 
@@ -133,9 +134,7 @@ def apply(action, node: Node):
     Returns a new node after the action have been applied."""
     state = node.state
     depth = node.depth
-    new_state = {
-        coord: CellState(cell.color, cell.height)
-        for coord, cell in state.items()}
+    new_state = dict(state)
         
     new_depth = depth + 1
     new_node = Node(new_state, node, action, new_depth, []) #some redundancy in this
