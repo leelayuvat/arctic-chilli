@@ -1,0 +1,21 @@
+The decision-making agent was designed using A*, keeping track of the cost so far and also using a 
+heuristic to guide the process. The A* search was implemented using Python’s heapq to implement a 
+min heap and create a priority queue. Nodes are then separated into generated and an expanded list. 
+The generated list is a priority queue which then is popped off and expanded, using a method find_children 
+to find all of the possible moves after that. At worst, this algorithm performs like breadth first search with 
+time complexity O(bd) with b as the branching factor and d as the depth of the goal state. And in the best case, 
+it will be O(1) where it will find the goal state instantly. 
+
+
+The heuristic used is a very simple one. It evaluates the board and returns a number equal to the number of 
+enemy pieces on the board. The less the pieces, the more the search favors the state. The heuristic suits the 
+purpose of the assignment where it will be guaranteed to find the optimal solution in the least moves possible. 
+It is also admissible so it works well with A* and is guaranteed to be optimal and complete. The heuristic falls 
+apart when the opponent can also move because it does not take into account one’s own losses in each move and the 
+consequences of making some moves.
+
+
+Assuming every stack has to act, the branching factor would be reduced, making the search less computationally 
+expensive. The search space would be smaller but more error checks would need to be made. For example, ensuring 
+pieces do not move to eat the same piece. Other than that, the basic principles will still hold true in searching 
+through all possible board states.
