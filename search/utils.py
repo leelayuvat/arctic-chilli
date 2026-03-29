@@ -64,6 +64,8 @@ def create_root(initial_state):
 
 
 def evaluate_heuristic(state):
+    """Takes a state and calculate the heuristics. It looks at how many rows and
+    how many columns containing blue pieces and return the smallest value."""
     blue_coords = {}
     for coord, cell in state.items():
         if cell.color == PlayerColor.BLUE:
@@ -78,7 +80,7 @@ def evaluate_heuristic(state):
         unique_rows.add(coord.r)
         unique_cols.add(coord.c)
 
-    return min(len(unique_rows), len(unique_cols))
+    return min(len(unique_rows), len(unique_cols))   # 1 if not goal_test(state) else 0
 
 
 @dataclass
